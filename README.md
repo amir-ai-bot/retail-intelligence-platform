@@ -13,7 +13,9 @@ The goal is to answer practical retail business questions:
 
 ## Current Status
 
-This repository is in the foundation and data preparation stage.
+Current Phase: Data Warehouse Design
+
+This repository is moving from data preparation into PostgreSQL warehouse architecture and dimensional modeling.
 
 Completed:
 
@@ -25,6 +27,8 @@ Completed:
 
 In progress:
 
+- PostgreSQL schema architecture.
+- Retail analytics star schema design.
 - Exploratory analysis notebooks.
 - SQL KPI queries and analytical views.
 - Dashboard design and screenshots.
@@ -104,22 +108,29 @@ python src/transform.py
 Planned data flow:
 
 ```text
-Raw Kaggle Data
+CSV Files
       |
       v
-Python Cleaning Scripts
+raw schema
       |
       v
-Processed Data
+staging schema
       |
-      +--> SQL Analysis
+      v
+warehouse schema
       |
-      +--> Power BI Dashboard
+      v
+marts schema
       |
-      +--> Forecasting Model
+      +--> Power BI
+      +--> Machine Learning
+      `--> FastAPI
 ```
 
-Architecture diagrams and notes will be stored in `architecture/`.
+Architecture documentation is available in:
+
+- `docs/warehouse_architecture.md`
+- `docs/star_schema.md`
 
 ## Roadmap
 
