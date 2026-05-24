@@ -13,9 +13,9 @@ The goal is to answer practical retail business questions:
 
 ## Current Status
 
-Current Phase: Data Warehouse Design
+Current Phase: Python ETL Pipeline
 
-This repository is moving from data preparation into PostgreSQL warehouse architecture and dimensional modeling.
+This repository is moving from warehouse design into a reusable Python ETL pipeline for loading cleaned CSV files into PostgreSQL.
 
 Completed:
 
@@ -29,6 +29,7 @@ In progress:
 
 - PostgreSQL schema architecture.
 - Retail analytics star schema design.
+- Python ETL loading into PostgreSQL.
 - Exploratory analysis notebooks.
 - SQL KPI queries and analytical views.
 - Dashboard design and screenshots.
@@ -101,6 +102,39 @@ Run the cleaning script:
 
 ```bash
 python src/transform.py
+```
+
+## Loading Cleaned Data Into PostgreSQL
+
+Cleaned CSV files can be loaded into the PostgreSQL `raw` schema with:
+
+```text
+src/load_to_postgres.py
+```
+
+The loader:
+
+- Reads all CSV files from `data/processed/`.
+- Derives PostgreSQL table names from CSV filenames.
+- Loads each file into the `raw` schema.
+- Uses `if_exists="replace"` for development refreshes.
+- Reads database credentials from environment variables or a local `.env` file.
+
+Create a local `.env` file from `.env.example`:
+
+```text
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5432
+POSTGRES_DB=retail_warehouse
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=your_password
+```
+
+Run the loader:
+
+```bash
+pip install -r requirements.txt
+python src/load_to_postgres.py
 ```
 
 ## Architecture
