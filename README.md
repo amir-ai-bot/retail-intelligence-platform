@@ -13,9 +13,9 @@ The goal is to answer practical retail business questions:
 
 ## Current Status
 
-Current Phase: Python ETL Pipeline
+Current Phase: Staging Models
 
-This repository is moving from warehouse design into a reusable Python ETL pipeline for loading cleaned CSV files into PostgreSQL.
+This repository is moving from raw PostgreSQL loading into typed staging models for business-ready analysis.
 
 Completed:
 
@@ -30,6 +30,7 @@ In progress:
 - PostgreSQL schema architecture.
 - Retail analytics star schema design.
 - Python ETL loading into PostgreSQL.
+- PostgreSQL staging models.
 - Exploratory analysis notebooks.
 - SQL KPI queries and analytical views.
 - Dashboard design and screenshots.
