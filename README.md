@@ -1,5 +1,7 @@
 # Retail Intelligence Platform
 
+[![CI](https://github.com/amir-ai-bot/retail-intelligence-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/amir-ai-bot/retail-intelligence-platform/actions/workflows/ci.yml)
+
 Retail Intelligence Platform is a data engineering and analytics portfolio project for retail sales analysis. It shows how raw CSV datasets can be cleaned with Python, loaded into PostgreSQL, modeled with SQL, and prepared for Power BI dashboards, forecasting, and API access.
 
 The project is intentionally practical: it focuses on repeatable data preparation, clear warehouse layers, documented SQL logic, and a small FastAPI surface for serving metrics.
