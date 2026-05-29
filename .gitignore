@@ -34,6 +34,7 @@ data/**
 *.feather
 *.pkl
 *.pickle
+*.joblib
 *.db
 *.sqlite
 *.sqlite3

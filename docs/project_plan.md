@@ -1,37 +1,48 @@
 # Project Plan
 
-## Phase 1: Repository Foundation
+This plan keeps the project focused on a realistic junior data/backend engineering portfolio. The goal is to show repeatable work across Python, SQL, PostgreSQL, BI, and a small API surface without overstating production readiness.
 
-- Create clean repository structure.
-- Add README, documentation placeholders, `.gitignore`, and dependency file.
-- Keep raw and processed datasets out of GitHub.
+## Completed Foundation
 
-## Phase 2: Data Preparation
+- Repository structure for source code, SQL, docs, dashboards, notebooks, and screenshots.
+- Python cleaning pipeline for Online Retail and Walmart datasets.
+- Local data policy that keeps raw and processed datasets out of Git.
+- PostgreSQL loader for processed CSV files.
+- Staging SQL models with typed columns and documented cleaning rules.
+- Warehouse, mart, and KPI SQL scripts.
+- FastAPI endpoints for selected warehouse metrics.
+- Baseline Walmart weekly sales forecasting scripts.
+- Docker Compose service for local PostgreSQL.
+- Optional Airflow DAG for pipeline orchestration.
 
-- Profile raw Kaggle datasets.
-- Clean missing, duplicate, and invalid records.
-- Create repeatable transformation scripts.
-- Document cleaning assumptions.
+## Next Improvements
 
-## Phase 3: Analysis and SQL
+### 1. Data Quality Checks
 
-- Build KPI queries for sales, customers, products, and stores.
-- Create analytical views for dashboard consumption.
+- Add row-count checks after each stage.
+- Add null and duplicate checks for business keys.
+- Store pipeline run metadata in PostgreSQL.
 
-## Phase 4: Dashboard
+### 2. Power BI Dashboard
 
-- Design Power BI dashboard pages.
+- Connect Power BI to the `marts` schema.
+- Build pages for sales overview, product performance, store performance, and forecasting.
 - Add screenshots to `screenshots/`.
-- Document dashboard metrics and filters.
 
-## Phase 5: Modeling
+### 3. Modeling Notes
 
-- Train baseline forecasting models.
-- Compare model performance.
-- Save modeling notes and evaluation results.
+- Compare the baseline model with a simpler benchmark.
+- Document features, target variable, train/test split, and model limitations.
+- Add a short interpretation of the most important drivers.
 
-## Phase 6: Delivery
+### 4. API Hardening
 
-- Finalize architecture diagram.
-- Polish README for recruiters.
-- Add project walkthrough and business recommendations.
+- Add request validation for filters.
+- Add pagination for list endpoints.
+- Add tests around database query helpers.
+
+### 5. Portfolio Polish
+
+- Add a compact architecture diagram.
+- Add final dashboard screenshots.
+- Add a short project walkthrough that explains engineering decisions.
