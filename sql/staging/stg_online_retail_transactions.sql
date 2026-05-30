@@ -41,7 +41,19 @@ typed AS (
       AND country IS NOT NULL
 )
 SELECT
-    MD5(CONCAT_WS('|', invoice_no, stock_code, customer_id::text, invoice_timestamp::text)) AS transaction_line_id,
+    -- Include all source line attributes so repeated product purchases remain distinct.
+    MD5(CONCAT_WS(
+        '|',
+        invoice_no,
+        stock_code,
+        product_description,
+        quantity::text,
+        invoice_timestamp::text,
+        unit_price::text,
+        customer_id::text,
+        country,
+        source_total_sales::text
+    )) AS transaction_line_id,
     invoice_no,
     stock_code,
     product_description,

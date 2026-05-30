@@ -55,7 +55,7 @@ Cleaning rules applied:
 - Casts `unit_price` and sales values to numeric.
 - Keeps only positive quantities and unit prices.
 - Recalculates `sales_amount` from `quantity * unit_price`.
-- Adds a stable transaction-line hash key.
+- Adds a stable transaction-line hash key from all cleaned invoice-line attributes so repeated product purchases remain distinct.
 
 ### `staging.stg_walmart_sales`
 

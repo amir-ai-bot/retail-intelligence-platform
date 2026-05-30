@@ -15,3 +15,17 @@ CREATE SCHEMA IF NOT EXISTS staging;
 
 \echo 'Creating staging.stg_walmart_features'
 \i sql/staging/stg_walmart_features.sql
+
+\echo 'Staging row counts'
+SELECT 'staging.stg_online_retail_transactions' AS table_name, COUNT(*) AS row_count
+FROM staging.stg_online_retail_transactions
+UNION ALL
+SELECT 'staging.stg_walmart_sales', COUNT(*)
+FROM staging.stg_walmart_sales
+UNION ALL
+SELECT 'staging.stg_walmart_stores', COUNT(*)
+FROM staging.stg_walmart_stores
+UNION ALL
+SELECT 'staging.stg_walmart_features', COUNT(*)
+FROM staging.stg_walmart_features
+ORDER BY table_name;
