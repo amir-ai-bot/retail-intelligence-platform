@@ -129,11 +129,10 @@ Create staging tables:
 psql -h localhost -p 5432 -U postgres -d retail_warehouse -f sql/02_create_staging_tables.sql
 ```
 
-Create warehouse tables, marts, and KPI views:
+Create warehouse star-schema tables:
 
 ```bash
-psql -h localhost -p 5432 -U postgres -d retail_warehouse -f sql/create_tables.sql
-psql -h localhost -p 5432 -U postgres -d retail_warehouse -f sql/views.sql
+psql -h localhost -p 5432 -U postgres -d retail_warehouse -f sql/03_create_warehouse_tables.sql
 ```
 
 Run the API:
@@ -149,13 +148,29 @@ python src/train_model.py
 python src/predict.py
 ```
 
+## Current Phase
+
+**Warehouse Star Schema**
+
+The current warehouse phase builds reusable PostgreSQL dimensions and a sales
+fact from the verified staging tables. It creates:
+
+- `warehouse.dim_date`
+- `warehouse.dim_product`
+- `warehouse.dim_customer`
+- `warehouse.dim_store`
+- `warehouse.fact_sales`
+
+Marts are intentionally deferred until the warehouse model is accepted. See
+`docs/warehouse_models.md` for grains, sources, keys, and dataset limitations.
+
 ## Current Capabilities
 
 - Cleans Online Retail and Walmart sales datasets.
 - Produces cleaned CSV outputs and a data quality report.
 - Loads processed files into PostgreSQL.
 - Builds typed staging tables with documented transformation rules.
-- Defines a star-schema direction for warehouse modeling.
+- Builds a documented PostgreSQL warehouse star schema.
 - Provides SQL marts and KPI queries for dashboard consumption.
 - Exposes selected metrics through FastAPI.
 - Includes a baseline forecasting workflow for Walmart weekly sales.

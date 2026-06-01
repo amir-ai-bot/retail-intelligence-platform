@@ -53,12 +53,7 @@ with DAG(
             "-p ${POSTGRES_PORT:-5432} "
             "-U ${POSTGRES_USER:-postgres} "
             "-d ${POSTGRES_DB:-retail_warehouse} "
-            "-f sql/create_tables.sql && "
-            "psql -h ${POSTGRES_HOST:-localhost} "
-            "-p ${POSTGRES_PORT:-5432} "
-            "-U ${POSTGRES_USER:-postgres} "
-            "-d ${POSTGRES_DB:-retail_warehouse} "
-            "-f sql/views.sql"
+            "-f sql/03_create_warehouse_tables.sql"
         ),
     )
 
