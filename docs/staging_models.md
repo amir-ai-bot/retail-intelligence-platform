@@ -6,6 +6,24 @@ The staging layer transforms raw text-loaded CSV tables into typed, business-rea
 
 The staging layer does not create final warehouse tables. It keeps source-specific entities clean, typed, and ready for dimensional modeling.
 
+Run all staging models from the repository root:
+
+```powershell
+psql -h localhost -p 5432 -U postgres -d retail_warehouse -f sql/02_create_staging_tables.sql
+```
+
+## Verified Row Counts
+
+Verified on 2026-06-18 after loading the cleaned CSV files into the `raw`
+schema.
+
+| Staging table | Row count |
+| --- | ---: |
+| `staging.stg_online_retail_transactions` | 392,692 |
+| `staging.stg_walmart_sales` | 535,349 |
+| `staging.stg_walmart_features` | 8,190 |
+| `staging.stg_walmart_stores` | 45 |
+
 ## Flow
 
 ```text

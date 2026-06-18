@@ -12,6 +12,18 @@ Run the warehouse build from the repository root:
 psql -h localhost -p 5432 -U postgres -d retail_warehouse -f sql/03_create_warehouse_tables.sql
 ```
 
+## Verified Row Counts
+
+Verified on 2026-06-18 after rebuilding the warehouse from the staging layer.
+
+| Warehouse table | Row count |
+| --- | ---: |
+| `warehouse.dim_date` | 1,268 |
+| `warehouse.dim_product` | 3,746 |
+| `warehouse.dim_customer` | 4,347 |
+| `warehouse.dim_store` | 46 |
+| `warehouse.fact_sales` | 812,977 |
+
 ## Model Overview
 
 ```text
@@ -182,5 +194,5 @@ Business use:
   transaction discounts. They are not modeled as `discount`.
 - Neither dataset supplies product cost or profit. The warehouse does not invent
   a `profit` metric.
-- Marts are intentionally outside this phase. Build them only after the core
-  warehouse tables are accepted.
+- Marts are built from the accepted warehouse layer in `sql/marts/` and refreshed
+  through `sql/04_create_marts.sql`.
