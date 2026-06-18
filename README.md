@@ -2,104 +2,258 @@
 
 [![CI](https://github.com/amir-ai-bot/retail-intelligence-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/amir-ai-bot/retail-intelligence-platform/actions/workflows/ci.yml)
 
-Retail Intelligence Platform is a data engineering and analytics portfolio project for retail sales analysis. It shows how raw CSV datasets can be cleaned with Python, loaded into PostgreSQL, modeled with SQL, and prepared for Power BI dashboards, forecasting, and API access.
+Retail Intelligence Platform is an end-to-end data engineering and analytics
+portfolio project for retail sales analysis. It connects Python ETL, PostgreSQL,
+SQL modeling, dbt, FastAPI, Airflow, Docker, machine learning, and Power BI
+planning into one recruiter-ready system.
 
-The project is intentionally practical: it focuses on repeatable data preparation, clear warehouse layers, documented SQL logic, and a small FastAPI surface for serving metrics.
+## Business Problem
 
-## What This Project Demonstrates
+Retail teams need reliable answers to questions such as:
 
-| Area | Evidence in this repository |
-| --- | --- |
-| Python data pipelines | Cleaning, validation, loading, and baseline forecasting scripts in `src/` |
-| SQL and PostgreSQL | Raw, staging, warehouse, and mart schemas under `sql/` |
-| Business intelligence | Dashboard-ready marts and KPI queries for Power BI |
-| Backend systems | FastAPI endpoints for health checks and retail metrics |
-| Machine learning | Baseline weekly sales forecasting workflow |
-| Documentation | Architecture notes, data dictionary, staging models, and cleaning log |
+- How are sales trending by month and source system?
+- Which products, departments, stores, and customers drive revenue?
+- How do holiday weeks and external variables affect Walmart weekly sales?
+- What curated data can support BI dashboards, APIs, and forecasting?
 
-## Business Questions
+This project simulates the analytics platform needed to answer those questions
+from raw CSV datasets.
 
-The project is designed around retail questions that are useful for BI and analytics:
+## Solution
 
-- What are the main revenue, order, customer, product, and store trends?
-- Which products, departments, stores, and countries contribute most to sales?
-- How do holiday periods and time patterns affect weekly sales?
-- What cleaned data can support dashboards, forecasting, and backend APIs?
+The platform cleans local retail datasets, loads them into PostgreSQL, builds
+staging and warehouse models, creates dashboard-ready marts, exposes selected
+metrics through an API, and prepares a baseline sales forecasting workflow.
 
 ## Architecture
 
 ```text
-Kaggle CSV files
-      |
-      v
+Local Kaggle CSV files
+        |
+        v
 Python cleaning pipeline
-      |
-      v
+        |
+        v
 PostgreSQL raw schema
-      |
-      v
-PostgreSQL staging schema
-      |
-      v
-warehouse dimensions and facts
-      |
-      v
-dashboard/API/ML marts
-      |
-      +--> Power BI
-      +--> FastAPI
-      `--> Forecasting scripts
+        |
+        v
+SQL staging models
+        |
+        v
+Warehouse star schema
+        |
+        v
+Business marts
+        |
+        +--> Power BI dashboard plan
+        +--> FastAPI analytics endpoints
+        +--> ML forecasting module
+        `--> dbt docs and tests
 ```
+
+Airflow orchestrates the full local workflow, and Docker provides PostgreSQL
+plus the API service.
+
+## Tech Stack
+
+| Area | Tools |
+| --- | --- |
+| Data processing | Python, pandas |
+| Database | PostgreSQL |
+| Modeling | SQL, star schema, dbt |
+| Orchestration | Airflow |
+| API | FastAPI, SQLAlchemy, Pydantic |
+| Machine learning | scikit-learn, joblib |
+| BI | Power BI specification and DAX |
+| DevOps | Docker, Docker Compose, GitHub Actions |
 
 ## Repository Structure
 
 ```text
 retail-intelligence-platform/
-|-- airflow/        # Optional orchestration DAG
-|-- api/            # FastAPI service for selected metrics
+|-- airflow/        # Airflow DAG for pipeline orchestration
+|-- api/            # FastAPI analytics and prediction service
+|-- dashboard/      # Power BI plan, layouts, and DAX measures
 |-- data/           # Local-only raw and processed datasets
-|-- docs/           # Architecture and data documentation
+|-- dbt/            # dbt analytics engineering layer
+|-- docs/           # Technical and business documentation
+|-- ml/             # Forecasting model scripts and local model folder
 |-- notebooks/      # Exploration and modeling notebooks
-|-- screenshots/    # Dashboard and output screenshots
-|-- sql/            # PostgreSQL schemas, staging models, marts, KPIs
-|-- src/            # Python ETL and forecasting scripts
+|-- screenshots/    # Dashboard/API screenshots for portfolio use
+|-- sql/            # Raw, staging, warehouse, and marts SQL
+|-- src/            # Python extraction, cleaning, and loading scripts
+|-- Dockerfile
 |-- docker-compose.yml
-|-- requirements.txt
-`-- README.md
+`-- requirements.txt
 ```
 
-## Data Sources
+## Data Pipeline
 
-This project is designed for local Kaggle downloads. Large datasets are not committed to GitHub.
+1. Raw CSV files are stored locally under `data/raw/`.
+2. `src/transform.py` cleans Online Retail and Walmart datasets.
+3. `src/load_to_postgres.py` loads cleaned CSVs into `raw`.
+4. `sql/02_create_staging_tables.sql` builds typed staging tables.
+5. `sql/03_create_warehouse_tables.sql` builds the star schema.
+6. `sql/04_create_marts.sql` builds analytics-ready marts.
 
-Expected local layout:
+Verified raw load:
+
+| Raw table | Rows |
+| --- | ---: |
+| `raw.online_retail_clean` | 392,692 |
+| `raw.walmart_train_clean` | 420,285 |
+| `raw.walmart_test_clean` | 115,064 |
+| `raw.walmart_features_clean` | 8,190 |
+| `raw.walmart_stores_clean` | 45 |
+
+## Warehouse Design
+
+The warehouse uses a source-aware star schema:
+
+- `warehouse.dim_date`
+- `warehouse.dim_product`
+- `warehouse.dim_customer`
+- `warehouse.dim_store`
+- `warehouse.fact_sales`
+
+Verified warehouse fact rows: **812,977**.
+
+The design keeps Online Retail and Walmart analytically compatible without
+pretending the datasets are transactionally connected.
+
+## Business Marts
+
+The `marts` schema contains:
+
+- `marts.sales_overview`
+- `marts.product_performance`
+- `marts.customer_performance`
+- `marts.store_performance`
+- `marts.forecasting_base`
+
+See `docs/business_marts.md` for KPI definitions and verified row counts.
+
+## dbt Layer
+
+The dbt project lives in `dbt/retail_analytics/`.
+
+It uses a hybrid approach: the verified PostgreSQL SQL scripts remain the source
+of truth, while dbt reads those objects as sources and materializes dbt-managed
+copies for documentation and tests.
+
+Commands:
+
+```powershell
+cd dbt/retail_analytics
+dbt run
+dbt test
+dbt docs generate
+dbt docs serve
+```
+
+See `docs/dbt.md`.
+
+## Airflow Pipeline
+
+The DAG `retail_intelligence_pipeline` runs:
 
 ```text
-data/
-|-- raw/
-|   |-- archive/OnlineRetail.csv
-|   `-- walmart-recruiting-store-sales-forecasting/
-|-- processed/
-`-- external/
+clean_data
+  -> load_raw_tables
+  -> refresh_staging
+  -> refresh_warehouse
+  -> refresh_marts
+  -> train_forecasting_model
 ```
 
-## Setup
+See `docs/airflow_pipeline.md`.
 
-Create a virtual environment and install dependencies:
+## ML Forecasting
 
-```bash
+The ML module trains a baseline `LinearRegression` model from
+`marts.forecasting_base`.
+
+Commands:
+
+```powershell
+python ml/train_forecasting_model.py
+python ml/model_evaluation.py
+python ml/predict_sales.py --store-id 1 --department-id 1 --store-type A
+```
+
+The model artifact is saved locally to:
+
+```text
+ml/models/sales_forecasting_model.pkl
+```
+
+Model binaries are intentionally ignored by Git.
+
+See `docs/ml_forecasting.md`.
+
+## FastAPI
+
+Run locally:
+
+```powershell
+uvicorn api.main:app --reload
+```
+
+Main endpoints:
+
+- `GET /`
+- `GET /health`
+- `GET /sales-overview`
+- `GET /sales-overview/monthly`
+- `GET /top-products`
+- `GET /store-performance`
+- `POST /predict-sales`
+
+See `docs/api.md`.
+
+## Docker
+
+Build and run PostgreSQL plus the API:
+
+```powershell
+docker compose up --build
+```
+
+Docker services:
+
+- `postgres`
+- `api`
+
+See `docs/docker_setup.md`.
+
+## Power BI Dashboard Plan
+
+Dashboard pages:
+
+1. Executive Overview
+2. Sales Trends
+3. Product Performance
+4. Customer Analysis
+5. Store Performance
+6. Forecasting & Recommendations
+
+See:
+
+- `dashboard/powerbi_dashboard_plan.md`
+- `dashboard/measures_dax.md`
+- `dashboard/page_layouts.md`
+
+## How To Run Locally
+
+Create and activate a virtual environment:
+
+```powershell
 python -m venv .venv
 .venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-Start PostgreSQL locally:
-
-```bash
-docker compose up -d postgres
-```
-
-Create a local `.env` file from `.env.example`:
+Create `.env` from `.env.example`:
 
 ```text
 POSTGRES_HOST=localhost
@@ -109,74 +263,45 @@ POSTGRES_USER=postgres
 POSTGRES_PASSWORD=your_password
 ```
 
-## Run The Pipeline
+Run the core pipeline:
 
-Clean local CSV files:
-
-```bash
+```powershell
 python src/transform.py
-```
-
-Load cleaned outputs into PostgreSQL:
-
-```bash
 python src/load_to_postgres.py
-```
-
-Create staging tables:
-
-```bash
 psql -h localhost -p 5432 -U postgres -d retail_warehouse -f sql/02_create_staging_tables.sql
-```
-
-Create warehouse star-schema tables:
-
-```bash
 psql -h localhost -p 5432 -U postgres -d retail_warehouse -f sql/03_create_warehouse_tables.sql
+psql -h localhost -p 5432 -U postgres -d retail_warehouse -f sql/04_create_marts.sql
 ```
 
-Run the API:
+Optional:
 
-```bash
+```powershell
+python ml/train_forecasting_model.py
 uvicorn api.main:app --reload
 ```
 
-Train a baseline forecasting model:
+## Screenshots
 
-```bash
-python src/train_model.py
-python src/predict.py
-```
+Add portfolio screenshots to `screenshots/` after building the Power BI report
+and running the API docs locally.
 
-## Current Phase
+Suggested screenshots:
 
-**Warehouse Star Schema**
+- Power BI executive overview
+- Product performance page
+- Store performance page
+- FastAPI `/docs`
+- dbt documentation page
 
-The current warehouse phase builds reusable PostgreSQL dimensions and a sales
-fact from the verified staging tables. It creates:
+## Future Improvements
 
-- `warehouse.dim_date`
-- `warehouse.dim_product`
-- `warehouse.dim_customer`
-- `warehouse.dim_store`
-- `warehouse.fact_sales`
+- Add automated SQL data quality checks.
+- Add pytest coverage for API service helpers.
+- Add model comparison against Random Forest or XGBoost.
+- Add dbt exposures for BI dashboards.
+- Add CI jobs for SQL linting and dbt parsing.
+- Add final Power BI screenshots.
 
-Marts are intentionally deferred until the warehouse model is accepted. See
-`docs/warehouse_models.md` for grains, sources, keys, and dataset limitations.
+## Author
 
-## Current Capabilities
-
-- Cleans Online Retail and Walmart sales datasets.
-- Produces cleaned CSV outputs and a data quality report.
-- Loads processed files into PostgreSQL.
-- Builds typed staging tables with documented transformation rules.
-- Builds a documented PostgreSQL warehouse star schema.
-- Provides SQL marts and KPI queries for dashboard consumption.
-- Exposes selected metrics through FastAPI.
-- Includes a baseline forecasting workflow for Walmart weekly sales.
-
-## Notes For Reviewers
-
-The repository is designed as a portfolio project, so it favors clarity over excessive infrastructure. The code avoids hard-coded database credentials, keeps large files out of Git, and documents the assumptions behind each data layer.
-
-The intended profile signal is a junior engineer who can connect Python, SQL, PostgreSQL, BI, and backend basics into one organized project.
+Yassin Dhibi
