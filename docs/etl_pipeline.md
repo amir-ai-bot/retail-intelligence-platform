@@ -83,4 +83,26 @@ python src/load_to_postgres.py
 - The loader creates the `raw` schema if it does not already exist.
 - The script uses clear logging for discovery, loading, row counts, and failures.
 - Failed file loads raise an error so the pipeline does not silently hide data problems.
-- This phase is designed for development. Later phases can add incremental loads, audit columns, row counts, and data quality checks.
+- When pandas or SQLAlchemy are not installed, the loader falls back to PostgreSQL
+  `psql` and `COPY` with normalized text columns.
+- This phase is designed for development. Later phases can add incremental loads,
+  audit columns, and persisted data quality checks.
+
+## Verified Raw Load
+
+Verified on 2026-06-18 against the local PostgreSQL database
+`retail_warehouse`.
+
+| Raw table | Row count |
+| --- | ---: |
+| `raw.online_retail_clean` | 392,692 |
+| `raw.walmart_features_clean` | 8,190 |
+| `raw.walmart_stores_clean` | 45 |
+| `raw.walmart_test_clean` | 115,064 |
+| `raw.walmart_test_model_ready` | 115,064 |
+| `raw.walmart_train_clean` | 420,285 |
+| `raw.walmart_train_model_ready` | 420,285 |
+
+No load warnings were observed beyond the expected fallback to `psql` because
+the local virtual environment did not include optional pandas and SQLAlchemy
+dependencies at verification time.
