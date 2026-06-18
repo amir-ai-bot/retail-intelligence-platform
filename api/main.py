@@ -1,102 +1,144 @@
 from __future__ import annotations
 
-from contextlib import contextmanager
-from pathlib import Path
 from typing import Any
 
-from fastapi import FastAPI, HTTPException
-from sqlalchemy import create_engine, text
-from sqlalchemy.engine import Engine
+from fastapi import FastAPI, HTTPException, Query
 
-from src.load_to_postgres import PostgresConfig, load_local_env
-
-
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
-
-app = FastAPI(
-    title="Retail Intelligence API",
-    description="Small API layer for selected retail warehouse metrics.",
-    version="0.1.0",
+from api.schemas import (
+    HealthResponse,
+    PredictionRequest,
+    PredictionResponse,
+    ProjectStatus,
+)
+from api.services import (
+    fetch_all,
+    fetch_one,
+    get_prediction,
+    verify_database_connection,
 )
 
 
-def get_engine() -> Engine:
-    load_local_env(PROJECT_ROOT / ".env")
-    config = PostgresConfig.from_env()
-    return create_engine(config.sqlalchemy_url(), pool_pre_ping=True)
+app = FastAPI(
+    title="Retail Intelligence API",
+    description="Analytics and prediction API for the Retail Intelligence Platform.",
+    version="1.0.0",
+)
 
 
-@contextmanager
-def db_connection():
-    try:
-        engine = get_engine()
-        with engine.connect() as connection:
-            yield connection
-    except Exception as exc:
-        raise HTTPException(status_code=503, detail=f"Database unavailable: {exc}") from exc
+@app.get("/", response_model=ProjectStatus)
+def root() -> ProjectStatus:
+    return ProjectStatus(
+        project="Retail Intelligence Platform",
+        status="ready",
+        layers=["raw", "staging", "warehouse", "marts", "ml"],
+        docs=["README.md", "docs/api.md", "docs/business_marts.md"],
+    )
 
 
-def fetch_one(query: str) -> dict[str, Any]:
-    with db_connection() as connection:
-        row = connection.execute(text(query)).mappings().first()
-    return dict(row or {})
+@app.get("/health", response_model=HealthResponse)
+def health() -> HealthResponse:
+    verify_database_connection()
+    return HealthResponse(status="ok", database="connected")
 
 
-def fetch_all(query: str) -> list[dict[str, Any]]:
-    with db_connection() as connection:
-        rows = connection.execute(text(query)).mappings().all()
-    return [dict(row) for row in rows]
-
-
-@app.get("/health")
-def health() -> dict[str, str]:
-    with db_connection() as connection:
-        connection.execute(text("SELECT 1"))
-    return {"status": "ok"}
-
-
-@app.get("/metrics/sales-overview")
+@app.get("/sales-overview")
 def sales_overview() -> dict[str, Any]:
     return fetch_one(
         """
         SELECT
-            COALESCE(SUM(sales_amount), 0)::numeric(14, 2) AS total_sales,
-            COUNT(*)::integer AS sales_rows,
-            COUNT(DISTINCT customer_key)::integer AS customers,
-            COUNT(DISTINCT product_key)::integer AS products
-        FROM warehouse.fact_sales
+            ROUND(SUM(total_revenue), 2) AS total_revenue,
+            SUM(total_orders)::integer AS total_orders,
+            ROUND(SUM(total_quantity), 2) AS total_quantity,
+            ROUND(SUM(total_revenue) / NULLIF(SUM(total_orders), 0), 2) AS average_order_value,
+            COUNT(*)::integer AS monthly_rows
+        FROM marts.sales_overview
         """
     )
 
 
-@app.get("/metrics/monthly-sales")
+@app.get("/sales-overview/monthly")
 def monthly_sales() -> list[dict[str, Any]]:
     return fetch_all(
         """
         SELECT
-            d.year,
-            d.month,
-            COALESCE(SUM(f.sales_amount), 0)::numeric(14, 2) AS sales_amount
-        FROM warehouse.fact_sales f
-        JOIN warehouse.dim_date d ON d.date_key = f.date_key
-        GROUP BY d.year, d.month
-        ORDER BY d.year, d.month
-        """
-    )
-
-
-@app.get("/metrics/top-products")
-def top_products(limit: int = 10) -> list[dict[str, Any]]:
-    safe_limit = max(1, min(limit, 50))
-    return fetch_all(
-        f"""
-        SELECT
-            product_name,
+            month_start_date,
+            year,
+            month,
+            month_name,
             source_system,
-            COALESCE(SUM(sales_amount), 0)::numeric(14, 2) AS sales_amount
-        FROM marts.product_performance
-        GROUP BY product_name, source_system
-        ORDER BY sales_amount DESC
-        LIMIT {safe_limit}
+            total_revenue,
+            total_orders,
+            total_quantity,
+            average_order_value,
+            revenue_growth_pct
+        FROM marts.sales_overview
+        ORDER BY month_start_date, source_system
         """
     )
+
+
+@app.get("/top-products")
+def top_products(limit: int = Query(default=10, ge=1, le=50)) -> list[dict[str, Any]]:
+    return fetch_all(
+        """
+        SELECT
+            product_key,
+            product_code,
+            product_name,
+            department_id,
+            product_level,
+            source_system,
+            sales_rows,
+            quantity_sold,
+            total_revenue,
+            revenue_rank,
+            performance_band
+        FROM marts.product_performance
+        ORDER BY total_revenue DESC, product_name
+        LIMIT :limit
+        """,
+        {"limit": limit},
+    )
+
+
+@app.get("/store-performance")
+def store_performance(limit: int = Query(default=20, ge=1, le=100)) -> list[dict[str, Any]]:
+    return fetch_all(
+        """
+        SELECT
+            store_key,
+            store_id,
+            store_name,
+            store_type,
+            store_size,
+            source_system,
+            sales_rows,
+            total_revenue,
+            holiday_revenue,
+            non_holiday_revenue,
+            sales_per_store_size,
+            store_revenue_rank
+        FROM marts.store_performance
+        ORDER BY total_revenue DESC, store_reference
+        LIMIT :limit
+        """,
+        {"limit": limit},
+    )
+
+
+@app.post("/predict-sales", response_model=PredictionResponse)
+def predict_sales(request: PredictionRequest) -> PredictionResponse:
+    try:
+        prediction = get_prediction(request)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    return PredictionResponse(predicted_weekly_sales=round(prediction, 2), model="LinearRegression")
+
+
+# Backward-compatible aliases from the earlier API draft.
+app.add_api_route("/metrics/sales-overview", sales_overview, methods=["GET"])
+app.add_api_route("/metrics/monthly-sales", monthly_sales, methods=["GET"])
+app.add_api_route("/metrics/top-products", top_products, methods=["GET"])
