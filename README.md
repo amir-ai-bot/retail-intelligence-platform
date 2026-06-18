@@ -285,6 +285,10 @@ uvicorn api.main:app --reload
 The repository includes local dashboard preview screenshots generated from the
 live PostgreSQL marts.
 
+### LinkedIn / Portfolio Showcase
+
+![Retail Intelligence Platform showcase](screenshots/linkedin-project-showcase.png)
+
 ### Dashboard Overview
 
 ![Retail Intelligence dashboard overview](screenshots/dashboard-overview.png)

@@ -6,6 +6,7 @@ marts.
 
 ## Included Images
 
+- `linkedin-project-showcase.png`
 - `dashboard-overview.png`
 - `dashboard-sales-overview.png`
 - `dashboard-product-performance.png`
