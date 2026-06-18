@@ -282,16 +282,24 @@ uvicorn api.main:app --reload
 
 ## Screenshots
 
-Add portfolio screenshots to `screenshots/` after building the Power BI report
-and running the API docs locally.
+The repository includes local dashboard preview screenshots generated from the
+live PostgreSQL marts.
 
-Suggested screenshots:
+### Dashboard Overview
 
-- Power BI executive overview
-- Product performance page
-- Store performance page
-- FastAPI `/docs`
-- dbt documentation page
+![Retail Intelligence dashboard overview](screenshots/dashboard-overview.png)
+
+### Sales Overview
+
+![Sales overview dashboard](screenshots/dashboard-sales-overview.png)
+
+### Product Performance
+
+![Product performance dashboard](screenshots/dashboard-product-performance.png)
+
+### Store Performance
+
+![Store performance dashboard](screenshots/dashboard-store-performance.png)
 
 ## Future Improvements
 

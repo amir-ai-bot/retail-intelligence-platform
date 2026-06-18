@@ -1,10 +1,12 @@
 # Screenshots
 
-Add dashboard and notebook screenshots here when the visual outputs are ready.
+This folder contains visual proof of the completed Retail Intelligence Platform.
+The images are generated from the local dashboard preview backed by PostgreSQL
+marts.
 
-Recommended examples:
+## Included Images
 
-- Dashboard overview
-- Sales trend analysis
-- Product/category performance
-- Forecasting results
+- `dashboard-overview.png`
+- `dashboard-sales-overview.png`
+- `dashboard-product-performance.png`
+- `dashboard-store-performance.png`
